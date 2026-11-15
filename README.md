@@ -48,3 +48,7 @@ No Android Studio, aguarde a sincronização do Gradle e gere o APK pelo menu Bu
 5. Extraia o ZIP do Artifact e instale `app-debug.apk` no Android.
 
 O workflow gera um APK de depuração. O botão central usa o plugin oficial Capacitor Camera para abrir a interface nativa de captura do Android e salvar uma foto de teste.
+
+
+## Camera Pro 0.2 — captura integrada
+O obturador agora captura um frame diretamente do elemento de prévia (`video`) usando canvas. O workflow injeta um plugin Android `GallerySaver` que grava o JPEG na galeria usando `MediaStore`, sem abrir o aplicativo de câmera externo. O arquivo fica em `Pictures/Camera Pro`.
