@@ -1,6 +1,6 @@
 import { registerPlugin } from "@capacitor/core";
 
-const GallerySaver = registerPlugin("GallerySaver");
+const NativeCamera = registerPlugin("NativeCamera");
 const video = document.querySelector("#video");
 const hint = document.querySelector("#hint");
 const status = document.querySelector("#status");
@@ -36,60 +36,34 @@ async function startPreview() {
 
 async function capturePhoto() {
   if (isCapturing) return;
-  if (!stream || !video.videoWidth || !video.videoHeight) {
-    await startPreview();
-    if (!stream || !video.videoWidth) return;
-  }
   isCapturing = true;
   const shutter = document.querySelector("#capture");
   shutter.classList.add("capturing");
   try {
-    const canvas = document.createElement("canvas");
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    const ctx = canvas.getContext("2d", { alpha: false });
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-    const blob = await new Promise(resolve => canvas.toBlob(resolve, "image/jpeg", 0.96));
-    if (!blob) throw new Error("Não foi possível processar a imagem.");
-
-    const dataUrl = await blobToDataUrl(blob);
-    const base64 = dataUrl.split(",")[1];
-
-    // Native MediaStore integration saves directly into the Android gallery.
-    const result = await GallerySaver.saveImage({
-      base64,
-      fileName: `CameraPro_${new Date().toISOString().replace(/[:.]/g, "-")}.jpg`
-    });
-
-    showCapturedPhoto(URL.createObjectURL(blob));
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null; track = null; video.srcObject = null;
+    }
+    status.textContent = "CAPTURANDO EM ALTA RESOLUÇÃO...";
+    const result = await NativeCamera.captureHighestResolution();
+    const width = result.width || 0, height = result.height || 0;
+    const mp = result.megapixels || (width * height / 1000000);
     status.textContent = "FOTO SALVA";
-    document.querySelector("#footnote").textContent = "Foto salva na galeria do celular";
     hint.hidden = false;
-    hint.textContent = "Foto capturada e salva na galeria!";
-    setTimeout(() => { if (stream) hint.hidden = true; }, 2200);
-    console.log("Imagem salva:", result?.uri || "MediaStore");
+    hint.textContent = `Foto salva na galeria: ${width} × ${height} (${mp.toFixed(1)} MP)`;
+    document.querySelector("#footnote").textContent = `Última foto: ${width} × ${height} · ${mp.toFixed(1)} MP`;
   } catch (e) {
     console.error(e);
-    // If the native gallery bridge is unavailable, still show the captured image
-    // and offer a browser download as a fallback.
+    status.textContent = "FALHA NA CAPTURA";
     hint.hidden = false;
-    hint.textContent = `A foto foi capturada, mas não foi possível salvar na galeria: ${e.message || e}`;
-    status.textContent = "FALHA AO SALVAR";
+    hint.textContent = `Não foi possível capturar em alta resolução: ${e.message || e}`;
   } finally {
     isCapturing = false;
     shutter.classList.remove("capturing");
+    await startPreview();
   }
 }
 
-function blobToDataUrl(blob) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-}
 
 function showCapturedPhoto(url) {
   if (lastPhotoUrl) URL.revokeObjectURL(lastPhotoUrl);
@@ -153,7 +127,7 @@ function showPanel(title, html) {
 }
 
 document.querySelector("#settings").addEventListener("click", () => showPanel("Camera Pro 0.2", `
-  <p class="note">O obturador agora captura diretamente a imagem da prévia do Camera Pro. A foto é enviada ao armazenamento de mídia do Android para aparecer na galeria.</p>
+  <p class="note">O obturador usa a API Camera2 do Android para capturar na maior resolução JPEG anunciada pela câmera traseira.</p>
   <p class="note">Para fotografar, primeiro abra a prévia pelo botão de câmera e depois toque no obturador central.</p>
 `));
 

@@ -52,3 +52,7 @@ O workflow gera um APK de depuração. O botão central usa o plugin oficial Cap
 
 ## Camera Pro 0.2 — captura integrada
 O obturador agora captura um frame diretamente do elemento de prévia (`video`) usando canvas. O workflow injeta um plugin Android `GallerySaver` que grava o JPEG na galeria usando `MediaStore`, sem abrir o aplicativo de câmera externo. O arquivo fica em `Pictures/Camera Pro`.
+
+
+## Camera Pro 0.3 — Camera2
+Captura nativa Camera2, seleciona o maior tamanho JPEG informado pela câmera traseira, grava JPEG em qualidade 98 em Pictures/Camera Pro e mostra dimensões/MP retornados pela API. A prévia WebView é pausada durante a captura e reiniciada em seguida.
