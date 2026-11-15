@@ -53,6 +53,8 @@ jobs:
           import android.Manifest;
           import android.content.ContentValues;
           import android.hardware.camera2.*;
+          import android.hardware.camera2.params.StreamConfigurationMap;
+          import android.graphics.ImageFormat;
           import android.media.*;
           import android.net.Uri;
           import android.os.*;
