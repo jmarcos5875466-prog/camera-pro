@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#050505" />
+  <title>Camera Pro</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="camera">
+    <header class="topbar">
+      <button class="round" id="flash" aria-label="Flash">⚡</button>
+      <div class="top-center"><span class="live-dot"></span><span id="status">CÂMERA PRO</span></div>
+      <button class="round" id="switch" aria-label="Trocar câmera">↻</button>
+    </header>
+
+    <section class="viewfinder" id="viewfinder">
+      <video id="video" autoplay playsinline muted></video>
+      <div class="grid-lines" id="grid"></div>
+      <div class="focus-box" id="focusBox"></div>
+      <div class="view-hint" id="hint">Toque em iniciar para abrir a câmera</div>
+      <div class="zoom-pills">
+        <button class="zoom active" data-zoom="1">1×</button>
+        <button class="zoom" data-zoom="2">2×</button>
+      </div>
+    </section>
+
+    <section class="controls">
+      <div class="quick-tools">
+        <button class="tool" id="gridToggle"><span>▦</span><small>Grade</small></button>
+        <button class="tool" id="timer"><span>◷</span><small>Temporizador</small></button>
+        <button class="tool" id="look"><span>◐</span><small>Estilo</small></button>
+        <button class="tool" id="settings"><span>☼</span><small>Ajustes</small></button>
+      </div>
+
+      <nav class="modes" aria-label="Modos de câmera">
+        <button data-mode="CINEMA">CINEMA</button>
+        <button data-mode="VÍDEO">VÍDEO</button>
+        <button class="selected" data-mode="FOTO">FOTO</button>
+        <button data-mode="RETRATO">RETRATO</button>
+        <button data-mode="NOITE">NOITE</button>
+      </nav>
+
+      <div class="capture-row">
+        <button class="gallery" id="lastShot" aria-label="Última foto">▧</button>
+        <button class="shutter" id="capture" aria-label="Capturar"><span></span></button>
+        <button class="camera-switch" id="start">▶</button>
+      </div>
+      <p class="footnote" id="footnote">Toque no botão central para testar a câmera nativa</p>
+    </section>
+  </main>
+
+  <dialog id="panel">
+    <div class="panel-head"><strong id="panelTitle">Ajustes</strong><button id="closePanel">✕</button></div>
+    <div id="panelContent"></div>
+  </dialog>
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
