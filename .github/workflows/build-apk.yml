@@ -137,8 +137,8 @@ jobs:
           from pathlib import Path
           p=Path("android/app/src/main/java/br/com/camerapro/app/MainActivity.java")
           s=p.read_text()
-          s=s.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\\nimport br.com.camerapro.app.NativeCameraPlugin;")
-          s=s.replace("public class MainActivity extends BridgeActivity {", "public class MainActivity extends BridgeActivity {\\n    @Override\\n    public void onCreate(android.os.Bundle savedInstanceState) {\\n        registerPlugin(NativeCameraPlugin.class);\\n        super.onCreate(savedInstanceState);\\n    }")
+          s=s.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\nimport br.com.camerapro.app.NativeCameraPlugin;")
+          s=s.replace("public class MainActivity extends BridgeActivity {", "public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(android.os.Bundle savedInstanceState) {\n        registerPlugin(NativeCameraPlugin.class);\n        super.onCreate(savedInstanceState);\n    }")
           p.write_text(s)
           PY
           fi
