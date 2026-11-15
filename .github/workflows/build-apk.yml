@@ -44,6 +44,77 @@ jobs:
               s = s.replace(marker, marker + "\n    " + permissions)
           p.write_text(s)
           PY
+      - name: Add native gallery saver plugin
+        shell: bash
+        run: |
+          mkdir -p android/app/src/main/java/br/com/camerapro/app
+          cat > android/app/src/main/java/br/com/camerapro/app/GallerySaverPlugin.java <<'JAVA'
+          package br.com.camerapro.app;
+
+          import android.content.ContentValues;
+          import android.net.Uri;
+          import android.os.Build;
+          import android.provider.MediaStore;
+          import android.util.Base64;
+          import com.getcapacitor.Plugin;
+          import com.getcapacitor.PluginCall;
+          import com.getcapacitor.PluginMethod;
+          import com.getcapacitor.annotation.CapacitorPlugin;
+          import java.io.OutputStream;
+
+          @CapacitorPlugin(name = "GallerySaver")
+          public class GallerySaverPlugin extends Plugin {
+              @PluginMethod
+              public void saveImage(PluginCall call) {
+                  String base64 = call.getString("base64");
+                  String fileName = call.getString("fileName", "CameraPro.jpg");
+                  if (base64 == null || base64.isEmpty()) {
+                      call.reject("Imagem vazia.");
+                      return;
+                  }
+                  Uri imageUri = null;
+                  try {
+                      byte[] bytes = Base64.decode(base64, Base64.DEFAULT);
+                      ContentValues values = new ContentValues();
+                      values.put(MediaStore.Images.Media.DISPLAY_NAME, fileName);
+                      values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                          values.put(MediaStore.Images.Media.RELATIVE_PATH, "Pictures/Camera Pro");
+                          values.put(MediaStore.Images.Media.IS_PENDING, 1);
+                      }
+                      imageUri = getContext().getContentResolver().insert(
+                          MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+                      if (imageUri == null) throw new Exception("Não foi possível criar o arquivo na galeria.");
+                      try (OutputStream out = getContext().getContentResolver().openOutputStream(imageUri)) {
+                          if (out == null) throw new Exception("Não foi possível gravar a imagem.");
+                          out.write(bytes);
+                          out.flush();
+                      }
+                      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                          ContentValues done = new ContentValues();
+                          done.put(MediaStore.Images.Media.IS_PENDING, 0);
+                          getContext().getContentResolver().update(imageUri, done, null, null);
+                      }
+                      call.resolve();
+                  } catch (Exception e) {
+                      if (imageUri != null) getContext().getContentResolver().delete(imageUri, null, null);
+                      call.reject("Erro ao salvar na galeria: " + e.getMessage(), e);
+                  }
+              }
+          }
+          JAVA
+          MAIN="android/app/src/main/java/br/com/camerapro/app/MainActivity.java"
+          if [ -f "$MAIN" ] && ! grep -q 'GallerySaverPlugin' "$MAIN"; then
+            python3 - <<'PY'
+          from pathlib import Path
+          p=Path("android/app/src/main/java/br/com/camerapro/app/MainActivity.java")
+          s=p.read_text()
+          s=s.replace("import com.getcapacitor.BridgeActivity;", "import com.getcapacitor.BridgeActivity;\nimport br.com.camerapro.app.GallerySaverPlugin;")
+          s=s.replace("public class MainActivity extends BridgeActivity {", "public class MainActivity extends BridgeActivity {\n    @Override\n    public void onCreate(android.os.Bundle savedInstanceState) {\n        registerPlugin(GallerySaverPlugin.class);\n        super.onCreate(savedInstanceState);\n    }")
+          p.write_text(s)
+          PY
+          fi
+
       - name: Sync Capacitor
         run: npx cap sync android
       - name: Build debug APK
